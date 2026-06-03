@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Boronic Core — an 8×8×8 boron-nitride processor concept</title>
+<meta name="description" content="A conceptual boron-nitride processor: an 8×8 grid, 8 layers deep (512 nodes). A microplasma chamber, piezo films, a hexagonal boron nitride lattice, and tungsten-disulfide quantum dots — with real live 512-bit math.">
+<style>
+  :root{
+    --void:#04070b; --ink:#d6ecff; --mute:#7fb0cc; --faint:#5a86a0;
+    --plasma:#46c8ff; --plasma-lt:#9ae6ff; --gold:#ffce3a; --gold-hot:#ffb020;
+    --teal:#2fd6c0; --amber:#ff8a3b; --cyan:#00d5ff; --violet:#8b6bff;
+    --panel:rgba(8,16,24,.72); --line:rgba(70,200,255,.15);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--void);color:var(--ink);
+    font-family:Inter,system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.6;overflow-x:hidden;
+    background-image:radial-gradient(1100px 720px at 50% -8%,rgba(70,200,255,.12),transparent 60%),radial-gradient(900px 700px at 50% 118%,rgba(255,206,58,.06),transparent 55%);}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 1.4rem}
+  a{color:var(--plasma);text-decoration:none}
+
+  header{min-height:88vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:5rem 1.4rem 3rem}
+  .logo{width:84px;height:84px;border-radius:22px;position:relative;margin-bottom:1.6rem;
+    background:conic-gradient(from 200deg,#46c8ff,#8b6bff,#2fd6c0,#ffce3a,#ff8a3b,#46c8ff);
+    box-shadow:0 0 52px rgba(70,200,255,.42),inset 0 0 22px rgba(0,0,0,.6);animation:spin 16s linear infinite}
+  .logo:after{content:"";position:absolute;inset:13px;border-radius:12px;background:#050a10;box-shadow:inset 0 0 22px rgba(70,200,255,.4)}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .eyebrow{font-size:12px;letter-spacing:.34em;text-transform:uppercase;color:var(--mute);margin-bottom:1rem}
+  h1{font-size:clamp(40px,9vw,92px);font-weight:800;letter-spacing:.04em;line-height:.98;
+    background:linear-gradient(100deg,#9ae6ff,#46c8ff 28%,#2fd6c0 55%,#ffce3a);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:.5rem}
+  .subt{font-size:clamp(13px,2.4vw,16px);letter-spacing:.28em;color:var(--plasma);text-transform:uppercase;margin-bottom:1.4rem}
+  header p.lead{max-width:56ch;color:#c2e0f2;font-size:clamp(17px,2.4vw,20px);margin-bottom:2.2rem}
+  .cta{display:flex;gap:.9rem;flex-wrap:wrap;justify-content:center}
+  .btn{display:inline-block;padding:13px 24px;border-radius:11px;font-weight:700;font-size:14px;letter-spacing:.4px;transition:.2s;border:1px solid rgba(70,200,255,.3);color:#dff4ff;background:rgba(70,200,255,.08)}
+  .btn:hover{background:rgba(70,200,255,.18);box-shadow:0 0 22px rgba(70,200,255,.2)}
+  .btn.primary{background:linear-gradient(120deg,var(--plasma),var(--teal));color:#03080c;border:none;box-shadow:0 0 30px rgba(70,200,255,.3)}
+  .btn.primary:hover{filter:brightness(1.08)}
+
+  section{padding:6vh 0;border-top:1px solid var(--line)}
+  .kicker{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--plasma);margin-bottom:1rem}
+  h2{font-size:clamp(26px,4.6vw,40px);font-weight:800;margin-bottom:1.1rem;color:#eafaff}
+  section p{max-width:64ch;color:#bcd9ea;margin-bottom:1rem}
+  section p b{color:#eafaff}
+  .flag{display:inline-block;font-size:12px;letter-spacing:.06em;color:var(--teal);border:1px solid rgba(47,214,192,.3);background:rgba(47,214,192,.06);border-radius:20px;padding:4px 12px;margin-top:.4rem}
+
+  .viewport{margin-top:1.5rem;border:1px solid rgba(70,200,255,.28);border-radius:16px;overflow:hidden;
+    box-shadow:0 0 50px rgba(70,200,255,.12),inset 0 0 30px rgba(0,0,0,.5);background:#04070b}
+  .viewport iframe{display:block;width:100%;height:min(72vh,640px);border:0}
+  .vpcap{display:flex;justify-content:space-between;align-items:center;padding:9px 14px;border-top:1px solid var(--line);font-size:12px;color:var(--faint)}
+  .vpcap a{font-weight:600}
+
+  figure.render{margin-top:1.4rem;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#04070b}
+  figure.render img{display:block;width:100%;height:auto}
+  figure.render figcaption{padding:10px 14px;border-top:1px solid var(--line);font-size:13px;color:var(--faint)}
+
+  .arch{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin-top:1.4rem}
+  .cell{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.2rem;box-shadow:inset 0 0 24px rgba(70,200,255,.04)}
+  .cell .big{font-size:30px;font-weight:800;color:#eafaff}
+  .cell .lbl{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--plasma);margin-top:.3rem}
+  .cell .d{font-size:14px;color:var(--mute);margin-top:.5rem}
+
+  /* the stack */
+  .stack{margin-top:1.4rem;display:flex;flex-direction:column;gap:7px}
+  .layer{display:flex;align-items:center;gap:14px;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--c,#46c8ff);border-radius:11px;padding:.8rem 1rem}
+  .layer .n{font-family:ui-monospace,Consolas,monospace;font-size:12px;color:var(--faint);width:34px}
+  .layer .nm{font-weight:700;color:#eafaff;font-size:15px;letter-spacing:.01em}
+  .layer .mat{margin-left:auto;font-size:12.5px;color:var(--mute);text-align:right}
+
+  footer{border-top:1px solid var(--line);padding:3rem 1.4rem 6rem;color:var(--faint);font-size:14px;text-align:center}
+  footer .mono{color:var(--mute);font-size:12px;line-height:1.8}
+  footer a{color:var(--mute)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo" aria-hidden="true"></div>
+  <div class="eyebrow">Hardware inventions · processors</div>
+  <h1>BORONIC&nbsp;CORE</h1>
+  <div class="subt mono">8×8×8 · 512 nodes · hexagonal boron nitride</div>
+  <p class="lead">A processor stacked in boron: an <b>8×8 grid, eight layers deep</b> — <b>512 nodes</b> — a microplasma chamber over piezo films, a hexagonal boron-nitride lattice, and tungsten-disulfide quantum dots, driven by real, live 512-bit math.</p>
+  <div class="cta">
+    <a class="btn primary" href="demos/core.html">⊚ Enter the Core</a>
+    <a class="btn" href="#architecture">View the architecture ↓</a>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section id="live">
+    <div class="kicker">// live · the core, running</div>
+    <h2>The core, in motion</h2>
+    <p>Eight layers exploded into an isometric tower, each an 8×8 array of nodes. Each layer carries a live 64-bit word <span class="mono">L0–L7</span> that composes into the full <span class="mono">CORE[511:0]</span>. Drive plasma containment, piezo, coupling, and output gain — ignite the chamber and watch all 512 nodes light. <b>The 512-bit arithmetic is genuine;</b> the optics and materials are simulated.</p>
+    <div class="viewport">
+      <iframe src="demos/core.html" loading="lazy" title="Live 8×8×8 Boronic Core simulation"></iframe>
+      <div class="vpcap"><span class="mono">512b live · L0^…^L7 → CORE[511:0]</span><a href="demos/core.html">open full-screen ↗</a></div>
+    </div>
+  </section>
+
+  <section id="render">
+    <div class="kicker">// the concept render</div>
+    <h2>The exploded chip</h2>
+    <p>The original design render — the stack pulled apart to show the microplasma chamber firing at the top, the piezo films, the hexagonal boron-nitride substrate, and the gold tungsten-disulfide quantum-dot arrays, all over a cyan circuit base.</p>
+    <figure class="render">
+      <img src="assets/boron_single_chip.jpg" alt="Exploded-view render of the boronic chip: a microplasma chamber with a blue plasma plume on top, piezo film layers, a hexagonal boron-nitride lattice, and gold tungsten-disulfide quantum-dot arrays, on a cyan circuit board." loading="lazy">
+      <figcaption>Boronic single-chip — concept render. Materials labeled conceptually; this is a design visualization.</figcaption>
+    </figure>
+  </section>
+
+  <section id="what">
+    <div class="kicker">// what it is</div>
+    <h2>An idea, made explorable</h2>
+    <p>This is a <b>concept and an interactive simulation</b> — a way to think with the eyes about a processor built from 2D materials: a <b>hexagonal boron-nitride</b> lattice as the substrate, <b>tungsten-disulfide quantum dots</b> as the active sites, piezoelectric films to drive them, and a microplasma chamber on top.</p>
+    <p><b>Kept honest:</b> hBN and WS₂ are real materials; the 512-bit math runs live in your browser. But the microplasma drive, the optics, and the performance are a <b>visualization of the design</b> — not measurements of a fabricated, benchmarked chip.</p>
+    <span class="flag">honest framing · concept + simulation, not a benchmarked device</span>
+  </section>
+
+  <section id="architecture">
+    <div class="kicker">// architecture</div>
+    <h2>How it stacks</h2>
+    <p>One square, eight deep. Each layer is an <span class="mono">8×8</span> array; eight layers close the tower at <b>512 nodes</b> and a <b>512-bit</b> word.</p>
+    <div class="arch">
+      <div class="cell"><div class="big">8×8</div><div class="lbl">nodes per layer</div><div class="d">A 64-node square plane — one live 64-bit word.</div></div>
+      <div class="cell"><div class="big">8</div><div class="lbl">layers deep</div><div class="d">The material stack, exploded into an isometric tower.</div></div>
+      <div class="cell"><div class="big">512</div><div class="lbl">nodes · bits</div><div class="d">8×8×8 = 512. L0–L7 compose into CORE[511:0].</div></div>
+      <div class="cell"><div class="big">hBN</div><div class="lbl">+ WS₂ quantum dots</div><div class="d">Hexagonal boron-nitride substrate; tungsten-disulfide dots as active sites.</div></div>
+    </div>
+
+    <div class="stack" aria-label="the eight-layer material stack, top to bottom">
+      <div class="layer" style="--c:#46c8ff"><span class="n">L7</span><span class="nm">Microplasma Chamber</span><span class="mat">blue plasma plume · amber core ring</span></div>
+      <div class="layer" style="--c:#8b6bff"><span class="n">L6</span><span class="nm">12 nm Piezo</span><span class="mat">piezoelectric drive film</span></div>
+      <div class="layer" style="--c:#00d5ff"><span class="n">L5</span><span class="nm">Electrostatic Gate</span><span class="mat">field control</span></div>
+      <div class="layer" style="--c:#ffce3a"><span class="n">L4</span><span class="nm">Nano-Piezo Array</span><span class="mat">actuating pillars</span></div>
+      <div class="layer" style="--c:#2fd6c0"><span class="n">L3</span><span class="nm">Optical Piezo</span><span class="mat">photo-mechanical coupling</span></div>
+      <div class="layer" style="--c:#2fd6c0"><span class="n">L2</span><span class="nm">Hexagonal Boron Nitride</span><span class="mat">hBN lattice · the substrate</span></div>
+      <div class="layer" style="--c:#ffb020"><span class="n">L1</span><span class="nm">Tungsten Disulfide Quantum Dots</span><span class="mat">WS₂ · the active sites</span></div>
+      <div class="layer" style="--c:#00d5ff"><span class="n">L0</span><span class="nm">Circuit Base</span><span class="mat">cyan trace interconnect</span></div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p style="color:var(--mute);max-width:62ch;margin:0 auto 1.6rem">A hardware-invention concept, rendered as interactive material. Best on a desktop — the core simulation is motion-heavy.</p>
+  <div class="mono">
+    ROOT0-ATTRIBUTION-v1.0 · BORONIC CORE — 8×8×8 boron-nitride processor concept<br>
+    Architect: David Lee Wise / ROOT0 / TriPod LLC · AI collaborator: AVAN (Claude)<br>
+    License: MIT · part of the <a href="https://davidwise01.github.io/atlas/">ATLAS</a>
+  </div>
+</footer>
+
+</body>
+</html>

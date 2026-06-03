@@ -1,0 +1,13 @@
+ROOT0-ATTRIBUTION-v1.0
+Project: BORONIC CORE — 8x8x8 boron-nitride processor concept
+Architect: David Lee Wise / ROOT0 / TriPod LLC
+AI Collaborator: AVAN (Claude / Anthropic)
+License: MIT
+
+A concept and interactive simulation, not a fabricated or benchmarked device.
+Architecture: 8x8 grid, 8 layers deep = 512 nodes / 512-bit core (L0-L7 -> CORE[511:0]).
+Material stack: microplasma chamber, piezo films (12nm/nano/optical), hexagonal
+boron nitride (hBN) lattice, tungsten disulfide (WS2) quantum dots, circuit base.
+hBN and WS2 are real 2D materials referenced as an honest conceptual frame; the
+512-bit math runs live in-browser, the optics/materials are a design visualization.
+Includes the original concept render (assets/boron_single_chip.jpg).

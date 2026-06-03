@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Boronic Core — 8×8×8 · 512 Nodes · hBN</title>
+<style>
+  :root{
+    --void:#04070b; --ink:#d6ecff; --plasma:#46c8ff; --plasma-lt:#9ae6ff;
+    --gold:#ffce3a; --gold-hot:#ffb020; --teal:#2fd6c0; --amber:#ff8a3b;
+    --cyan:#00d5ff; --violet:#8b6bff; --mute:#7fb0cc;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;background:var(--void);color:var(--ink);
+    font-family:Inter,system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;overflow:hidden}
+  .wrap{display:grid;grid-template-columns:330px 1fr;height:100%}
+
+  .side{
+    background:linear-gradient(180deg,rgba(8,14,24,.96),rgba(4,7,12,.97));
+    border-right:1px solid rgba(70,200,255,.16);
+    padding:18px 16px;display:flex;flex-direction:column;gap:15px;
+    backdrop-filter:blur(10px);z-index:5;overflow:auto
+  }
+  .brand{display:flex;gap:12px;align-items:center}
+  .logo{width:40px;height:40px;border-radius:11px;flex:none;position:relative;
+    background:conic-gradient(from 200deg,var(--plasma),var(--violet),var(--gold),var(--amber),var(--teal),var(--plasma));
+    box-shadow:0 0 22px rgba(70,200,255,.4),inset 0 0 14px rgba(0,0,0,.6)}
+  .logo:after{content:"";position:absolute;inset:7px;border-radius:7px;background:#060c14;
+    box-shadow:inset 0 0 12px rgba(255,176,32,.4)}
+  .logo:before{content:"";position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px 0 0 -4px;
+    border-radius:50%;background:var(--amber);box-shadow:0 0 12px var(--gold-hot);z-index:2}
+  .brand h1{margin:0;font-size:16px;letter-spacing:1.4px;font-weight:800;color:#eaf6ff}
+  .brand .sub{font-size:10.5px;letter-spacing:.9px;color:var(--mute);margin-top:3px}
+
+  .group{background:rgba(7,13,22,.7);border:1px solid rgba(70,200,255,.13);border-radius:14px;
+    padding:12px 12px 13px;box-shadow:inset 0 0 24px rgba(70,200,255,.035)}
+  .group-title{font-size:10.5px;color:var(--plasma-lt);letter-spacing:1.4px;margin:1px 0 9px;opacity:.95;font-weight:700}
+
+  .slider-row{margin:9px 0 12px}
+  .slider-row label{display:flex;justify-content:space-between;font-size:12px;color:#a7d2ee;margin-bottom:5px}
+  .slider-row label span{font-family:ui-monospace,Consolas,monospace;color:#eaf8ff}
+  input[type=range]{width:100%;height:24px;-webkit-appearance:none;appearance:none;background:transparent;margin:0;cursor:pointer}
+  input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:4px;
+    background:linear-gradient(90deg,rgba(70,200,255,.3),rgba(255,176,32,.3));border:1px solid rgba(70,200,255,.22)}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+    background:var(--plasma);border:1px solid rgba(255,255,255,.65);margin-top:-6px;
+    box-shadow:0 0 12px rgba(70,200,255,.75);cursor:pointer}
+  input[type=range]::-moz-range-track{height:6px;border-radius:4px;
+    background:linear-gradient(90deg,rgba(70,200,255,.3),rgba(255,176,32,.3));border:1px solid rgba(70,200,255,.22)}
+  input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--plasma);
+    border:1px solid rgba(255,255,255,.65);box-shadow:0 0 12px rgba(70,200,255,.75);cursor:pointer}
+
+  .btns{display:flex;gap:8px;margin-top:2px}
+  .btn{flex:1;padding:9px 8px;background:rgba(70,200,255,.07);border:1px solid rgba(70,200,255,.24);
+    color:#cdeeff;border-radius:10px;font-size:11.5px;cursor:pointer;transition:.18s;font-weight:700;letter-spacing:.4px}
+  .btn:hover{background:rgba(70,200,255,.14)}
+  .btn.active{background:rgba(255,176,32,.2);color:#fff;border-color:rgba(255,176,32,.55);
+    box-shadow:0 0 14px rgba(255,176,32,.25) inset,0 0 12px rgba(255,176,32,.2)}
+  .btn.ignite.active{background:rgba(255,138,59,.26);border-color:rgba(255,138,59,.65);
+    box-shadow:0 0 16px rgba(255,138,59,.35) inset,0 0 14px rgba(255,138,59,.3)}
+
+  .layers{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:2px}
+  .lbtn{padding:7px 8px;background:rgba(70,200,255,.05);border:1px solid rgba(70,200,255,.18);
+    color:#bfe4f5;border-radius:8px;font-size:10.5px;cursor:pointer;transition:.16s;text-align:left;line-height:1.25}
+  .lbtn b{display:block;font-size:9.5px;letter-spacing:.5px;opacity:.7}
+  .lbtn:hover{background:rgba(70,200,255,.12)}
+  .lbtn.active{background:rgba(47,214,192,.18);border-color:rgba(47,214,192,.5);color:#fff;
+    box-shadow:0 0 12px rgba(47,214,192,.22) inset}
+  .lall{grid-column:1 / -1;text-align:center}
+
+  .dw{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;color:#eafdff;letter-spacing:.6px;
+    background:rgba(255,176,32,.07);border:1px dashed rgba(255,176,32,.28);padding:8px;border-radius:8px;
+    text-align:center;margin-bottom:7px}
+  .row{font-size:10.5px;color:var(--mute);text-align:center;margin-bottom:10px}
+  .lw{display:grid;grid-template-columns:auto 1fr;gap:4px 8px;font-family:ui-monospace,Consolas,monospace;
+    font-size:10.5px;margin-bottom:9px}
+  .lw .k{color:var(--plasma-lt)}
+  .lw .v{color:#fff;text-align:right;letter-spacing:.3px}
+  .out>div{font-size:10px;color:var(--plasma-lt);margin-bottom:4px;letter-spacing:.4px}
+  .out code{display:block;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:10px;
+    color:#fff;background:rgba(0,0,0,.4);border:1px solid rgba(70,200,255,.18);padding:8px 9px;border-radius:8px;
+    word-break:break-all;line-height:1.55;max-height:104px;overflow:auto;letter-spacing:.5px;margin-bottom:9px;
+    box-shadow:inset 0 0 14px rgba(70,200,255,.06)}
+  .out code.xor{color:var(--gold);border-color:rgba(255,206,58,.25);word-break:normal}
+
+  .stage{position:relative;
+    background:radial-gradient(1300px 900px at 52% 42%,#0a1320 0%,#070d16 52%,#03050a 100%)}
+  canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .footer{position:absolute;bottom:0;left:0;right:0;height:32px;display:flex;align-items:center;
+    justify-content:center;font-size:10.5px;color:#6aa0bc;letter-spacing:.8px;
+    background:linear-gradient(180deg,transparent,rgba(0,0,0,.55));pointer-events:none;text-align:center;padding:0 10px}
+  .menu{display:none}
+  @media (max-width:920px){
+    .wrap{grid-template-columns:1fr}
+    .side{position:absolute;left:10px;top:10px;width:min(92vw,360px);max-height:84vh;border-radius:14px;
+      border:1px solid rgba(70,200,255,.2);box-shadow:0 12px 40px rgba(0,0,0,.6);transform:translateX(-115%);
+      transition:transform .28s ease}
+    .side.open{transform:translateX(0)}
+    .menu{display:flex;position:absolute;left:12px;top:12px;z-index:8;width:44px;height:44px;
+      align-items:center;justify-content:center;border-radius:11px;cursor:pointer;
+      background:rgba(8,16,28,.92);border:1px solid rgba(70,200,255,.3);color:var(--plasma);
+      font-size:20px;box-shadow:0 0 16px rgba(70,200,255,.2)}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="menu" id="menu">≡</div>
+  <aside class="side" id="side">
+    <div class="brand">
+      <div class="logo"></div>
+      <div>
+        <h1>BORONIC CORE</h1>
+        <div class="sub">8×8×8 · 512 NODES · hBN</div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-title">FIELD CONTROL</div>
+      <div class="slider-row">
+        <label>Plasma Containment <span id="contV">82%</span></label>
+        <input id="cont" type="range" min="0" max="100" value="82" step="1">
+      </div>
+      <div class="slider-row">
+        <label>Piezo Drive <span id="piezoV">68%</span></label>
+        <input id="piezo" type="range" min="0" max="100" value="68" step="1">
+      </div>
+      <div class="slider-row">
+        <label>Coupling / Coherence <span id="coupV">74%</span></label>
+        <input id="coup" type="range" min="0" max="100" value="74" step="1">
+      </div>
+      <div class="slider-row">
+        <label>Output Gain <span id="outV">90%</span></label>
+        <input id="out" type="range" min="0" max="100" value="90" step="1">
+      </div>
+      <div class="btns">
+        <button class="btn" id="fineBtn">.01 FINE</button>
+        <button class="btn ignite" id="igniteBtn">⚡ IGNITE</button>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-title">LAYER SELECT</div>
+      <div class="layers" id="layers"></div>
+    </div>
+
+    <div class="group">
+      <div class="group-title">DATA</div>
+      <div class="dw">512-BIT BORONIC CORE</div>
+      <div class="row">8×8 nodes/layer · 8 layers deep</div>
+      <div class="lw" id="lwGrid"></div>
+      <div class="out">
+        <div>CORE[511:0] (hex)</div>
+        <code id="coreHex">0</code>
+        <div>XOR checksum · L0 ^ … ^ L7 (64-bit)</div>
+        <code class="xor" id="xorHex">0000000000000000</code>
+      </div>
+    </div>
+  </aside>
+
+  <main class="stage">
+    <canvas id="c"></canvas>
+    <div class="footer">BORONIC PROCESSOR · 8×8×8 · 512 NODES · microplasma + hBN + WS₂ — simulation</div>
+  </main>
+</div>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const canvas = $('c'), ctx = canvas.getContext('2d');
+
+// ---- Layer material definitions (top -> bottom = L7 .. L0 visually; index 0 = top layer in array) ----
+// We render layerIdx 0 at TOP of the stack. Material list top->bottom:
+const MATERIALS = [
+  { name:'MICROPLASMA CHAMBER', short:'PLASMA', color:[70,200,255],  glow:[154,230,255] },
+  { name:'12 nm PIEZO',          short:'PIEZO',  color:[139,107,255], glow:[180,160,255] },
+  { name:'ELECTROSTATIC GATE',   short:'E-GATE', color:[0,213,255],   glow:[120,235,255] },
+  { name:'NANO-PIEZO ARRAY',     short:'NANO',   color:[255,206,58],  glow:[255,230,140] },
+  { name:'OPTICAL PIEZO',        short:'OPTIC',  color:[47,214,192],  glow:[150,245,230] },
+  { name:'hBN LATTICE',          short:'hBN',    color:[47,214,192],  glow:[150,245,230] },
+  { name:'WS₂ QUANTUM DOTS',     short:'WS₂',    color:[255,176,32],  glow:[255,220,120] },
+  { name:'CIRCUIT BASE',         short:'BASE',   color:[0,213,255],   glow:[120,235,255] },
+];
+const N = 8;            // grid is 8x8
+const LAYERS = 8;       // 8 layers deep
+const PER_LAYER = N*N;  // 64 nodes/layer
+
+// ---- State ----
+let containment=82, piezo=68, coupling=74, output=90;
+let fine=false, ignite=false, soloLayer=-1;
+const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// ---- Controls ----
+const cont=$('cont'), piezoEl=$('piezo'), coup=$('coup'), out=$('out');
+function fmt(v){ return fine ? v.toFixed(2)+'%' : Math.round(v)+'%'; }
+function updateLabels(){
+  $('contV').textContent=fmt(containment); $('piezoV').textContent=fmt(piezo);
+  $('coupV').textContent=fmt(coupling);   $('outV').textContent=fmt(output);
+}
+cont.addEventListener('input',e=>{containment=parseFloat(e.target.value);updateLabels();});
+piezoEl.addEventListener('input',e=>{piezo=parseFloat(e.target.value);updateLabels();});
+coup.addEventListener('input',e=>{coupling=parseFloat(e.target.value);updateLabels();});
+out.addEventListener('input',e=>{output=parseFloat(e.target.value);updateLabels();});
+$('fineBtn').addEventListener('click',function(){
+  fine=!fine; this.classList.toggle('active',fine);
+  const step=fine?'0.01':'1'; [cont,piezoEl,coup,out].forEach(s=>s.step=step); updateLabels();
+});
+$('igniteBtn').addEventListener('click',function(){ ignite=!ignite; this.classList.toggle('active',ignite); });
+updateLabels();
+
+// layer buttons
+const layersEl=$('layers');
+const allBtn=document.createElement('button');
+allBtn.className='lbtn lall active'; allBtn.textContent='ALL LAYERS';
+allBtn.addEventListener('click',()=>setSolo(-1));
+layersEl.appendChild(allBtn);
+const layerBtns=[];
+for(let i=0;i<LAYERS;i++){
+  const b=document.createElement('button');
+  b.className='lbtn';
+  b.innerHTML='<b>L'+(LAYERS-1-i)+'</b>'+MATERIALS[i].short;
+  b.addEventListener('click',()=>setSolo(i));
+  layersEl.appendChild(b); layerBtns.push(b);
+}
+function setSolo(i){
+  soloLayer=i;
+  allBtn.classList.toggle('active',i===-1);
+  layerBtns.forEach((b,k)=>b.classList.toggle('active',k===i));
+}
+
+// data readout grid (L7 top -> L0 bottom)
+const lwGrid=$('lwGrid'); const lwVals=[];
+for(let i=0;i<LAYERS;i++){
+  const k=document.createElement('div'); k.className='k'; k.textContent='L'+(LAYERS-1-i)+' '+MATERIALS[i].short;
+  const v=document.createElement('div'); v.className='v'; v.textContent='0';
+  lwGrid.appendChild(k); lwGrid.appendChild(v); lwVals.push(v);
+}
+
+// mobile menu
+$('menu').addEventListener('click',()=>$('side').classList.toggle('open'));
+
+// ---- Canvas resize ----
+function resize(){
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  canvas.width=Math.max(1,canvas.clientWidth*dpr);
+  canvas.height=Math.max(1,canvas.clientHeight*dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+window.addEventListener('resize',resize); resize();
+
+// faint circuit-trace texture (static, drawn each frame cheaply via cached pattern positions)
+const traces=[];
+for(let i=0;i<26;i++){
+  traces.push({ x:Math.random(), y:Math.random(), len:0.08+Math.random()*0.22,
+    horiz:Math.random()<0.5, a:0.04+Math.random()*0.05 });
+}
+const dots=[];
+for(let i=0;i<60;i++){ dots.push({x:Math.random(),y:Math.random(),s:Math.random()*1.1+.2,a:Math.random()*0.3+0.08}); }
+
+// ---- 512-bit math ----
+const MASK64 = (1n<<64n)-1n;
+let coreBig=0n, layerWords=new Array(LAYERS).fill(0n), xorWord=0n;
+function computeBits(t){
+  const amp = (coupling/100) * (0.45 + 0.55*(containment/100));
+  const ig = ignite ? 2 : 1;
+  xorWord=0n; coreBig=0n;
+  for(let L=0; L<LAYERS; L++){
+    let word=0n;
+    // each node bit driven by a phase function -> 64 bits per layer
+    const lf = 0.6 + L*0.13;
+    const ph = L*1.7;
+    let bitstr=0n;
+    for(let n=0; n<PER_LAYER; n++){
+      const s = Math.sin(t*lf + n*0.42 + ph) * 0.5 + 0.5; // 0..1
+      let v = s * amp * ig + (piezo/100)*0.18*Math.sin(t*1.3+n);
+      const bit = v > 0.5 ? 1n : 0n;
+      bitstr |= (bit << BigInt(n));
+    }
+    word = bitstr & MASK64;
+    layerWords[L]=word;
+    xorWord ^= word;
+    // CORE composition: L7 is most-significant (top), L0 least. Array index 0 = top = L7.
+    coreBig |= (word << BigInt((LAYERS-1-L)*64));
+  }
+}
+
+// ---- isometric projection ----
+// project grid (col,row) on layer L at yaw -> screen
+function project(col,row,layerY,yaw,scale,cx,cy){
+  // center grid coords -3.5..3.5
+  const gx=(col-(N-1)/2);
+  const gz=(row-(N-1)/2);
+  // rotate in xz plane by yaw
+  const rx = gx*Math.cos(yaw) - gz*Math.sin(yaw);
+  const rz = gx*Math.sin(yaw) + gz*Math.cos(yaw);
+  // isometric: x skew, y from depth + layer height
+  const isoX = rx*scale;
+  const isoY = rz*scale*0.52;        // depth foreshorten
+  return { x: cx + isoX, y: cy + isoY - layerY, depth: rz };
+}
+
+let lastDom=0;
+function draw(now){
+  const W=canvas.clientWidth, H=canvas.clientHeight;
+  const t=now*0.001;
+  ctx.clearRect(0,0,W,H);
+
+  // ---- background: circuit traces + vignette ----
+  ctx.save();
+  ctx.lineWidth=1;
+  for(const tr of traces){
+    ctx.strokeStyle='rgba(0,213,255,'+tr.a+')';
+    ctx.beginPath();
+    const x=tr.x*W, y=tr.y*H;
+    if(tr.horiz){ ctx.moveTo(x,y); ctx.lineTo(x+tr.len*W,y); ctx.lineTo(x+tr.len*W,y+18); }
+    else { ctx.moveTo(x,y); ctx.lineTo(x,y+tr.len*H); ctx.lineTo(x+18,y+tr.len*H); }
+    ctx.stroke();
+  }
+  for(const d of dots){ ctx.globalAlpha=d.a; ctx.fillStyle='#46c8ff';
+    ctx.beginPath(); ctx.arc(d.x*W,d.y*H,d.s,0,Math.PI*2); ctx.fill(); }
+  ctx.globalAlpha=1;
+  ctx.restore();
+
+  // ---- compute live bits ----
+  computeBits(t);
+
+  // ---- composition geometry ----
+  const cx=W*0.53, cy=H*0.50;
+  const yaw = reduceMotion ? 0.62 : (t*0.13);
+  const breathe = reduceMotion ? 0 : Math.sin(t*0.6)*6;
+  const scale = Math.min(W,H)*0.052;       // node spacing
+  const layerGap = Math.min(W,H)*0.085;    // vertical explode gap
+  const stackH = (LAYERS-1)*layerGap;
+
+  // draw from bottom layer (L0, array index 7) to top (index 0) for painter order
+  // array index 0 = top visually (highest layerY). compute layerY per index:
+  function layerYFor(idx){ return (LAYERS-1-idx)*layerGap - stackH/2 + breathe*Math.sin(idx*0.7); }
+
+  const igFactor = ignite?2:1;
+
+  // ---- inter-layer piezo pillars (faint connectors at grid corners/edges) ----
+  ctx.save();
+  ctx.lineWidth=1.1;
+  const pillarCols=[0,N-1,Math.floor(N/2)];
+  const pillarRows=[0,N-1,Math.floor(N/2)];
+  for(let ci of pillarCols){ for(let ri of pillarRows){
+    ctx.beginPath();
+    for(let idx=LAYERS-1; idx>=0; idx--){
+      const p=project(ci,ri,layerYFor(idx),yaw,scale,cx,cy);
+      if(idx===LAYERS-1) ctx.moveTo(p.x,p.y); else ctx.lineTo(p.x,p.y);
+    }
+    ctx.strokeStyle='rgba(255,206,58,0.10)';
+    ctx.stroke();
+  }}
+  ctx.restore();
+
+  // ---- draw each layer (back to front) ----
+  for(let idx=LAYERS-1; idx>=0; idx--){
+    const mat=MATERIALS[idx];
+    const layerY=layerYFor(idx);
+    const word=layerWords[idx];
+    const dim = (soloLayer!==-1 && soloLayer!==idx) ? 0.14 : 1;
+    const [cr,cg,cb]=mat.color, [gr,gg,gb]=mat.glow;
+
+    // layer plate outline (4 corners)
+    const c00=project(-0.6,-0.6,layerY,yaw,scale,cx,cy);
+    const c10=project(N-0.4,-0.6,layerY,yaw,scale,cx,cy);
+    const c11=project(N-0.4,N-0.4,layerY,yaw,scale,cx,cy);
+    const c01=project(-0.6,N-0.4,layerY,yaw,scale,cx,cy);
+    ctx.beginPath();
+    ctx.moveTo(c00.x,c00.y); ctx.lineTo(c10.x,c10.y); ctx.lineTo(c11.x,c11.y); ctx.lineTo(c01.x,c01.y); ctx.closePath();
+    ctx.fillStyle='rgba('+cr+','+cg+','+cb+','+(0.045*dim)+')';
+    ctx.fill();
+    ctx.strokeStyle='rgba('+cr+','+cg+','+cb+','+(0.28*dim)+')';
+    ctx.lineWidth=1.1; ctx.stroke();
+
+    // nodes: 8x8
+    for(let row=0; row<N; row++){
+      for(let col=0; col<N; col++){
+        const n=row*N+col;
+        const bit = Number((word >> BigInt(n)) & 1n);
+        const p=project(col,row,layerY,yaw,scale,cx,cy);
+        const glow = (0.22 + 0.78*bit) * (output/100);
+        const r = (1.7 + bit*1.6) * (W<700?0.82:1);
+        ctx.globalAlpha = (0.35 + 0.65*glow) * dim;
+        ctx.fillStyle = bit ? 'rgb('+gr+','+gg+','+gb+')' : 'rgb('+cr+','+cg+','+cb+')';
+        ctx.shadowColor='rgba('+gr+','+gg+','+gb+','+dim+')';
+        ctx.shadowBlur = bit ? (7+8*glow)*igFactor*dim : 0;
+        ctx.beginPath(); ctx.arc(p.x,p.y,r,0,Math.PI*2); ctx.fill();
+      }
+    }
+    ctx.shadowBlur=0; ctx.globalAlpha=1;
+
+    // ---- top layer: microplasma chamber (amber ring + blue plume) ----
+    if(idx===0){
+      const cen=project((N-1)/2,(N-1)/2,layerY,yaw,scale,cx,cy);
+      const intensity=(containment/100)*igFactor;
+      // amber core ring
+      const ringR=scale*1.5;
+      const g=ctx.createRadialGradient(cen.x,cen.y,0,cen.x,cen.y,ringR*2.4);
+      g.addColorStop(0,'rgba(255,176,32,'+(0.55*intensity)+')');
+      g.addColorStop(0.4,'rgba(255,138,59,'+(0.28*intensity)+')');
+      g.addColorStop(1,'rgba(255,138,59,0)');
+      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cen.x,cen.y,ringR*2.4,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle='rgba(255,206,58,'+(0.85*intensity)+')'; ctx.lineWidth=2.4;
+      ctx.shadowColor='rgba(255,176,32,1)'; ctx.shadowBlur=18*intensity;
+      ctx.beginPath(); ctx.ellipse(cen.x,cen.y,ringR,ringR*0.52,0,0,Math.PI*2); ctx.stroke();
+      ctx.shadowBlur=0;
+
+      // blue plasma plume rising
+      const plumeH = (scale*4.2) * (0.6+0.7*intensity);
+      const flick = reduceMotion?0:Math.sin(t*7)*0.5+Math.sin(t*13)*0.3;
+      for(let s=0;s<5;s++){
+        const sway = Math.sin(t*2.2 + s*1.3)* scale*0.5;
+        ctx.beginPath();
+        ctx.moveTo(cen.x + (s-2)*4, cen.y);
+        ctx.bezierCurveTo(
+          cen.x + sway*0.5 + (s-2)*3, cen.y - plumeH*0.4,
+          cen.x + sway + flick*6, cen.y - plumeH*0.75,
+          cen.x + sway*0.6, cen.y - plumeH*(0.9+0.04*s)
+        );
+        const lg=ctx.createLinearGradient(cen.x,cen.y,cen.x,cen.y-plumeH);
+        lg.addColorStop(0,'rgba(255,176,32,'+(0.5*intensity)+')');
+        lg.addColorStop(0.35,'rgba(70,200,255,'+(0.6*intensity)+')');
+        lg.addColorStop(1,'rgba(154,230,255,0)');
+        ctx.strokeStyle=lg; ctx.lineWidth=2.6-s*0.35;
+        ctx.lineCap='round';
+        ctx.shadowColor='rgba(70,200,255,0.9)'; ctx.shadowBlur=14*intensity;
+        ctx.stroke();
+      }
+      // plasma particles
+      for(let pI=0;pI<14;pI++){
+        const ph=(t*1.3 + pI*0.45)%1;
+        const py=cen.y - ph*plumeH;
+        const px=cen.x + Math.sin(t*3+pI)*scale*0.6*(0.3+ph);
+        ctx.globalAlpha=(1-ph)*0.8*intensity;
+        ctx.fillStyle='rgba(154,230,255,1)';
+        ctx.shadowColor='rgba(70,200,255,1)'; ctx.shadowBlur=10;
+        ctx.beginPath(); ctx.arc(px,py,1.6*(1-ph)+0.6,0,Math.PI*2); ctx.fill();
+      }
+      ctx.globalAlpha=1; ctx.shadowBlur=0;
+    }
+
+    // solo material label on stage
+    if(soloLayer===idx){
+      ctx.save();
+      ctx.font='700 13px Inter,system-ui,sans-serif';
+      ctx.fillStyle='rgb('+gr+','+gg+','+gb+')';
+      ctx.shadowColor='rgb('+cr+','+cg+','+cb+')'; ctx.shadowBlur=12;
+      ctx.textAlign='left'; ctx.textBaseline='middle';
+      ctx.fillText('L'+(LAYERS-1-idx)+' · '+mat.name, c10.x+14, c10.y);
+      ctx.restore();
+    }
+  }
+
+  // ---- throttle DOM readouts ~10/s ----
+  if(now-lastDom>100){
+    lastDom=now;
+    for(let i=0;i<LAYERS;i++){
+      lwVals[i].textContent=layerWords[i].toString(16).padStart(16,'0').toUpperCase();
+    }
+    $('coreHex').textContent=coreBig.toString(16).padStart(128,'0').toUpperCase();
+    $('xorHex').textContent=xorWord.toString(16).padStart(16,'0').toUpperCase();
+  }
+
+  // vignette
+  const vg=ctx.createRadialGradient(W*0.52,H*0.5,Math.min(W,H)*0.25,W*0.52,H*0.5,Math.max(W,H)*0.75);
+  vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,0.55)');
+  ctx.fillStyle=vg; ctx.fillRect(0,0,W,H);
+
+  requestAnimationFrame(draw);
+}
+requestAnimationFrame(draw);
+</script>
+</body>
+</html>
