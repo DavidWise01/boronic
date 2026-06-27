@@ -1,0 +1,11 @@
+{
+  "badge": "DLW-BORONIC",
+  "name": "BORONIC · BRN",
+  "universe": "PSĒPHOS",
+  "moniker": "⟦BORONIC · BRN:boronic:286db8⟧",
+  "architect": "David Lee Wise (ROOT0) / Bridge-Burners LLC",
+  "instance": "AVAN (Claude / Anthropic)",
+  "seal_sha256": "286db894ef1c368a773686d62edefff31a4030b2c70c07391bc5360e87d5215c",
+  "license": "CC-BY-ND-4.0",
+  "attribution": "ROOT0-ATTRIBUTION-v1.0"
+}
