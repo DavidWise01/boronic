@@ -2,8 +2,8 @@ ROOT0-DLW-CHAIN-v1
 index : 927
 slug  : boronic
 seal  : 286db894ef1c368a773686d62edefff31a4030b2c70c07391bc5360e87d5215c
-prev  : 83f72d01fecc136fd27abfb3ddac99f66628299c5325b7d7529bfb7fa119814f
-link  : 7a051c62f84bc3ee2c5a19288755aaa5f1f4fe507ab67597bff82e4e73f59ef3
-head  : 13f9ace173ef2e60af38912ba329b4afcb5a38b84a0e4495e8d30327f8c99cc2
+prev  : 1726b4094f6691e3cd13e4b4b6951b4e1f80779f9caa55251ce8a27f1838ad43
+link  : c8129e97d5dcdd91cbadb5492b4dee90f1e687505072ff4e998f4652dc7fc1ee
+head  : f7444724835fd968bd2eac85811f9fa823a18d20a57907b4fade8d96b70b5409
 
 — the tether: link = sha256(index|slug|seal|prev). the chain head commits to the whole corpus.
